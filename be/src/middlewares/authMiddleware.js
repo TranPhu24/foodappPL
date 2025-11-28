@@ -1,8 +1,6 @@
-// @ts-nocheck
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
-// authorization - xác minh user là ai
 export const protectedRoute = (req, res, next) => {
   try {
     // lấy token từ header
@@ -14,7 +12,7 @@ export const protectedRoute = (req, res, next) => {
     }
 
     // xác nhận token hợp lệ
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decodedUser) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decodedUser) => {
       if (err) {
         console.error(err);
 
@@ -38,4 +36,20 @@ export const protectedRoute = (req, res, next) => {
     console.error("Lỗi khi xác minh JWT trong authMiddleware", error);
     return res.status(500).json({ message: "Lỗi hệ thống" });
   }
+};
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Không có thông tin user" });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        message: "Bạn không có quyền truy cập vào tài nguyên này" 
+      });
+    }
+
+    next();
+  };
 };

@@ -11,20 +11,17 @@ export const register = catchAsync(async (req, res) => {
       message: "Vui lòng cung cấp đầy đủ username, email và password",
     });
   }
-
   const existingUser = await User.findOne({ email: email });
   if (existingUser) {
     return res.status(400).json({ message: "Email này đã được đăng ký" });
   }
 
-  //tạo user mới
   const user = await User.create({
     username: username,
     email: email,
     hashedPassword: password,
     role: role || "user",
   });
-
   res.status(201).json({
     message: "Đăng ký thành công!",
     user: {
@@ -42,7 +39,6 @@ export const login = catchAsync(async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ message: "Vui lòng nhập email và password" });
   }
-
   const user = await User.findOne({ email: email });
   if (!user || !(await user.matchPassword(password))) {
     return res.status(401).json({ message: "Email hoặc mật khẩu không đúng" });
