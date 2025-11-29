@@ -24,9 +24,19 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "employee", "admin"], 
       default: "user" 
     },
+
+    resetOTP: { 
+      type: Number, 
+      default: null 
+    },
+    resetOTPExpires: { 
+      type: Date, 
+      default: null 
+    },
   },
   { timestamps: true }
 );
+
 
 userSchema.pre("save", async function () {
   if (this.isModified("hashedPassword")) {

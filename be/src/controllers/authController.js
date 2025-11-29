@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 import jwt from "jsonwebtoken";
 import catchAsync from "../utils/catchAsync.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 export const register = catchAsync(async (req, res) => {
   const { username, email, password, role } = req.body;
@@ -78,4 +79,111 @@ export const refreshToken = catchAsync(async (req, res) => {
   } catch (err) {
     return res.status(403).json({ message: "Refresh token không hợp lệ hoặc đã hết hạn" });
   }
+});
+
+
+export const sendOTP = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Vui lòng nhập email" });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "Email không tồn tại" });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  user.resetOTP = otp;
+  user.resetOTPExpires = Date.now() + 5 * 60 * 1000;
+  await user.save();
+
+  await sendEmail(
+    email,
+    "Mã OTP đặt lại mật khẩu",
+    `
+      <div style="font-family: Arial; line-height: 1.5;">
+        <h2>Xin chào ${user.username},</h2>
+        <p>Mã OTP đặt lại mật khẩu của bạn là:</p>
+        <h1 style="color:#e63946; font-size: 36px; margin-top: 8px;">${otp}</h1>
+        <p>Mã có hiệu lực trong <strong>5 phút</strong>.</p>
+      </div>
+    `
+  );
+
+  res.json({ message: "OTP đã được gửi đến email của bạn" });
+});
+
+export const resetPassword = catchAsync(async (req, res) => {
+  const { username, email, password, otp } = req.body;
+
+  if (!username || !email || !password || !otp) {
+    return res.status(400).json({
+      message: "Vui lòng nhập đầy đủ username, email, password và OTP",
+    });
+  }
+
+  const user = await User.findOne({ email, username });
+  if (!user) {
+    return res.status(404).json({ message: "Thông tin người dùng không hợp lệ" });
+  }
+
+  if (!user.resetOTP || !user.resetOTPExpires) {
+    return res.status(400).json({ message: "OTP chưa được tạo" });
+  }
+
+  if (user.resetOTP !== otp) {
+    return res.status(400).json({ message: "OTP không đúng" });
+  }
+
+  if (Date.now() > user.resetOTPExpires) {
+    return res.status(400).json({ message: "OTP đã hết hạn" });
+  }
+
+  
+  user.hashedPassword = password; 
+  user.resetOTP = undefined;
+  user.resetOTPExpires = undefined;
+
+  await user.save();
+
+  res.json({ message: "Đặt lại mật khẩu thành công!" });
+});
+
+export const createEmployee = catchAsync(async (req, res) => {
+  const { username, email, password } = req.body;
+
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      message: "Vui lòng cung cấp đầy đủ username, email và password",
+    });
+  }
+
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  if (existingUser) {
+    return res.status(400).json({
+      message: "Email này đã được sử dụng",
+    });
+  }
+
+  const newEmployee = await User.create({
+    username: username,
+    email: email,
+    hashedPassword: password, 
+    role: "employee",        
+    createdBy: req.user._id, 
+  });
+
+  res.status(201).json({
+    message: "Tạo nhân viên thành công!",
+    user: {
+      id: newEmployee._id,
+      username: newEmployee.username,
+      email: newEmployee.email,
+      role: newEmployee.role,
+      createdBy: req.user.username,
+    },
+  });
 });
