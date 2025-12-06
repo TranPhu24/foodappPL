@@ -21,6 +21,7 @@ export const register = catchAsync(async (req, res) => {
     username: username,
     email: email,
     hashedPassword: password,
+    phone: null,
     role: role || "user",
   });
   res.status(201).json({
@@ -117,15 +118,15 @@ export const sendOTP = catchAsync(async (req, res) => {
 });
 
 export const resetPassword = catchAsync(async (req, res) => {
-  const { username, email, password, otp } = req.body;
+  const { email, password, otp } = req.body;
 
-  if (!username || !email || !password || !otp) {
+  if ( !email || !password || !otp) {
     return res.status(400).json({
-      message: "Vui lòng nhập đầy đủ username, email, password và OTP",
+      message: "Vui lòng nhập đầy đủ email, password và OTP",
     });
   }
 
-  const user = await User.findOne({ email, username });
+  const user = await User.findOne({ email });
   if (!user) {
     return res.status(404).json({ message: "Thông tin người dùng không hợp lệ" });
   }
@@ -152,38 +153,3 @@ export const resetPassword = catchAsync(async (req, res) => {
   res.json({ message: "Đặt lại mật khẩu thành công!" });
 });
 
-export const createEmployee = catchAsync(async (req, res) => {
-  const { username, email, password } = req.body;
-
-  if (!username || !email || !password) {
-    return res.status(400).json({
-      message: "Vui lòng cung cấp đầy đủ username, email và password",
-    });
-  }
-
-  const existingUser = await User.findOne({ email: email.toLowerCase() });
-  if (existingUser) {
-    return res.status(400).json({
-      message: "Email này đã được sử dụng",
-    });
-  }
-
-  const newEmployee = await User.create({
-    username: username,
-    email: email,
-    hashedPassword: password, 
-    role: "employee",        
-    createdBy: req.user._id, 
-  });
-
-  res.status(201).json({
-    message: "Tạo nhân viên thành công!",
-    user: {
-      id: newEmployee._id,
-      username: newEmployee.username,
-      email: newEmployee.email,
-      role: newEmployee.role,
-      createdBy: req.user.username,
-    },
-  });
-});

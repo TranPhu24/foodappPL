@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema(
       type: String, 
       required: true 
     },
+    phone: { 
+      type: String, 
+      default: null
+    },
     role: { 
       type: String, 
       enum: ["user", "employee", "admin"], 
@@ -32,6 +36,11 @@ const userSchema = new mongoose.Schema(
     resetOTPExpires: { 
       type: Date, 
       default: null 
+    },
+        createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
   },
   { timestamps: true }

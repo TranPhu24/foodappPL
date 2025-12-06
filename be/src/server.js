@@ -2,12 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./libs/db.js";
-import cloudinary from "./libs/cloudinary.js";
+
 
 
 import authRoute from "./routes/authRoute.js";
 import productRoute from "./routes/productRoute.js";
 import categoryRoute from "./routes/categoryRoute.js";
+import userRoute from "./routes/userRoute.js";
 
 import { swaggerSpec, swaggerUiMiddleware } from "./libs/swagger.js";
 
@@ -16,7 +17,13 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",  // FE domain
+  credentials: true,                // ⬅️ Cho phép gửi cookie + auth header
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+}));
+
 app.use(express.json());
 
 app.use("/api-docs", swaggerUiMiddleware.serve);
@@ -29,6 +36,7 @@ app.get("/api-docs", swaggerUiMiddleware.setup(swaggerSpec, {
 app.use("/api/auth", authRoute);
 app.use("/api/products", productRoute);
 app.use("/api/categories", categoryRoute);
+app.use("/api/user", userRoute);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
