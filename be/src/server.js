@@ -18,8 +18,8 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:3000",  // FE domain
-  credentials: true,                // ⬅️ Cho phép gửi cookie + auth header
+  origin: "http://localhost:3000",  
+  credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 }));
