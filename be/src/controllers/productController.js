@@ -61,10 +61,23 @@ export const getProducts = catchAsync(async (req, res) => {
 });
 export const getProduct = catchAsync(async (req, res) => {
   const product = await Product.findById(req.params.id).populate("category", "name");
-  if (!product) return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
 
-  res.json(product);
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "Không tìm thấy sản phẩm",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Lấy sản phẩm thành công",
+    data: {
+      product,
+    },
+  });
 });
+
 
 export const updateProduct = catchAsync(async (req, res) => {
   let updateData = { ...req.body };
