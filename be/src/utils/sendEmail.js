@@ -5,11 +5,10 @@ export async function sendEmail(to, subject, html) {
     service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS, // App password 16 ký tự
+      pass: process.env.EMAIL_PASS, 
     },
   });
 
-  // Kiểm tra SMTP có hoạt động không
   await transporter.verify();
 
   await transporter.sendMail({

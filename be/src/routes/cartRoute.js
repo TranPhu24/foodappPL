@@ -4,21 +4,18 @@ import {
   getCart,
   updateCartItem,
   removeCartItem,
-  clearCart,
 } from "../controllers/cartController.js";
 
-import { protectedRoute } from "../middlewares/authMiddleware.js";
+import { protectedRoute, authorizeRoles } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protectedRoute, addToCart);
+router.post("/", protectedRoute,authorizeRoles("user"), addToCart);
 
 router.get("/", protectedRoute, getCart);
 
-router.put("/", protectedRoute, updateCartItem);
+router.put("/", protectedRoute,authorizeRoles("user"),  updateCartItem);
 
-router.delete("/:productId", protectedRoute, removeCartItem);
-
-router.delete("/", protectedRoute, clearCart);
+router.delete("/:productId", protectedRoute,authorizeRoles("user"),  removeCartItem);
 
 export default router;

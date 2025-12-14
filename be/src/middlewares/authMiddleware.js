@@ -3,15 +3,14 @@ import User from "../models/user.js";
 
 export const protectedRoute = (req, res, next) => {
   try {
-    // lấy token từ header
     const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+    const token = authHeader && authHeader.split(" ")[1]; 
 
     if (!token) {
       return res.status(401).json({ message: "Không tìm thấy access token" });
     }
 
-    // xác nhận token hợp lệ
+
     jwt.verify(token, process.env.JWT_SECRET, async (err, decodedUser) => {
       if (err) {
         console.error(err);

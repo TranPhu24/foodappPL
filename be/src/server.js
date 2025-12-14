@@ -3,13 +3,12 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./libs/db.js";
 
-
-
 import authRoute from "./routes/authRoute.js";
 import productRoute from "./routes/productRoute.js";
 import categoryRoute from "./routes/categoryRoute.js";
 import userRoute from "./routes/userRoute.js";
 import cartRoute from "./routes/cartRoute.js";
+import orderRoute from "./routes/orderRoute.js";
 import { swaggerSpec, swaggerUiMiddleware } from "./libs/swagger.js";
 
 dotenv.config();
@@ -38,6 +37,7 @@ app.use("/api/products", productRoute);
 app.use("/api/categories", categoryRoute);
 app.use("/api/user", userRoute);
 app.use("/api/cart", cartRoute);
+app.use("/api/orders", orderRoute);
 
 
 const PORT = process.env.PORT || 5000;
