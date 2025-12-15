@@ -50,14 +50,7 @@ const orderSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: [
-        "pending",      
-        "confirmed",    
-        "preparing",    
-        "shipping",     
-        "completed",    
-        "cancelled", 
-      ],
+      enum: ["pending", "confirmed", "preparing", "shipping", "completed", "cancelled", ],
       default: "pending",
     },
 
@@ -66,39 +59,18 @@ const orderSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
-    confirmedAt: {
-      type: Date,
-      default: null,
-    },
-
-    preparingAt: {
-      type: Date,
-      default: null,
-    },
-
-    shippingAt: {
-      type: Date,
-      default: null,
-    },
-
-    completedAt: {
-      type: Date,
-      default: null,
-    },
+    confirmedAt: {type: Date,default: null,},
+    preparingAt: {type: Date,default: null,},
+    shippingAt: {type: Date,default: null,},
+    completedAt: {type: Date,default: null,},
 
     cancelledBy: {
       type: String,
       enum: ["user", "employee", "admin"],
       default: null,
     },
-    cancelReason: {
-      type: String,
-      default: "",
-    },
-    cancelledAt: {
-      type: Date,
-      default: null,
-    },
+    cancelReason: {type: String,default: "",},
+    cancelledAt: {type: Date,default: null,},
 
     shippingFee: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
@@ -109,4 +81,7 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Order", orderSchema);
+const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
+
+export default Order;
+

@@ -17,18 +17,13 @@ export const createOrder = catchAsync(async (req, res) => {
     return res.status(400).json({ message: "Giỏ hàng trống" });
   }
 
+  // check stock
   for (const item of cart.items) {
     if (item.quantity > item.product.stock) {
       return res.status(400).json({
         message: `Sản phẩm "${item.product.name}" chỉ còn ${item.product.stock}`,
       });
     }
-  }
-
-  for (const item of cart.items) {
-    await Product.findByIdAndUpdate(item.product._id, {
-      $inc: { stock: -item.quantity },
-    });
   }
 
   const orderItems = cart.items.map((item) => ({
@@ -54,25 +49,34 @@ export const createOrder = catchAsync(async (req, res) => {
     shippingFee,
     discount,
     finalTotal,
-    paymentStatus: "pending",
+    paymentStatus: paymentMethod === "COD" ? "paid" : "pending",
     orderStatus: "pending",
+    isPaid: paymentMethod === "COD",
+    paidAt: paymentMethod === "COD" ? new Date() : null,
   });
 
-  cart.items = [];
-  cart.totalPrice = 0;
-  cart.totalQuantity = 0;
-  await cart.save();
+  // ✅ CHỈ COD mới xử lý kho + cart
+  if (paymentMethod === "COD") {
+    for (const item of cart.items) {
+      await Product.findByIdAndUpdate(item.product._id, {
+        $inc: { stock: -item.quantity },
+      });
+    }
+
+    cart.items = [];
+    cart.totalPrice = 0;
+    cart.totalQuantity = 0;
+    await cart.save();
+  }
 
   res.status(201).json({
     success: true,
-    message: "Đặt hàng thành công",
     data: { order },
   });
 });
 
-/* =======================
-   USER: ĐƠN CỦA TÔI
-======================= */
+
+
 export const getMyOrders = catchAsync(async (req, res) => {
   const orders = await Order.find({ user: req.user.id })
     .sort({ createdAt: -1 });
@@ -80,9 +84,7 @@ export const getMyOrders = catchAsync(async (req, res) => {
   res.json({ success: true, orders });
 });
 
-/* =======================
-   USER / EMPLOYEE: XEM CHI TIẾT
-======================= */
+
 export const getOrderById = catchAsync(async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate("user", "username email")
@@ -102,9 +104,7 @@ export const getOrderById = catchAsync(async (req, res) => {
   res.json({ success: true, order });
 });
 
-/* =======================
-   EMPLOYEE: TẤT CẢ ĐƠN
-======================= */
+
 export const getAllOrders = catchAsync(async (req, res) => {
   const orders = await Order.find()
     .populate("user", "username email")
@@ -114,9 +114,7 @@ export const getAllOrders = catchAsync(async (req, res) => {
   res.json({ success: true, orders });
 });
 
-/* =======================
-   EMPLOYEE: DUYỆT / CẬP NHẬT TRẠNG THÁI
-======================= */
+
 export const updateOrderStatus = catchAsync(async (req, res) => {
   if (req.user.role !== "employee") {
     return res.status(403).json({ message: "Không có quyền" });
@@ -168,9 +166,6 @@ export const updateOrderStatus = catchAsync(async (req, res) => {
 });
 
 
-/* =======================
-   USER / EMPLOYEE: HỦY ĐƠN
-======================= */
 export const cancelOrder = catchAsync(async (req, res) => {
   const { reason = "" } = req.body;
 

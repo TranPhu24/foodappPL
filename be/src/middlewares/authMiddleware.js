@@ -20,7 +20,6 @@ export const protectedRoute = (req, res, next) => {
           .json({ message: "Access token hết hạn hoặc không đúng" });
       }
 
-      // tìm user
       const user = await User.findById(decodedUser.userId).select("-hashedPassword");
 
       if (!user) {
