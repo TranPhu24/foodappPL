@@ -167,8 +167,13 @@ export const updateOrderStatus = catchAsync(async (req, res) => {
 
 
 export const cancelOrder = catchAsync(async (req, res) => {
-  const { reason = "" } = req.body;
+  const { reason } = req.body || {};
 
+  if (!reason) {
+    return res.status(400).json({
+      message: "Vui lòng cung cấp lý do huỷ đơn",
+    });
+  }
   const order = await Order.findById(req.params.id);
   if (!order) {
     return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
