@@ -112,7 +112,7 @@ router.get("/", getProducts);
 router.get("/:id", getProduct);
 
 // admin
-router.post("/", upload.single("image"), authorizeRoles("admin"), createProduct);
+router.post("/", upload.single("image"), protectedRoute, authorizeRoles("admin"), createProduct);
 router.patch("/:id", protectedRoute, authorizeRoles("admin"),upload.single("image"), updateProduct);
 router.delete("/:id", protectedRoute, authorizeRoles("admin"), deleteProduct);
 

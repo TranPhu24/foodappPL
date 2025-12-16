@@ -39,6 +39,8 @@ export const createOrder = catchAsync(async (req, res) => {
   const discount = 0;
   const finalTotal = totalPrice + shippingFee - discount;
 
+  const isCOD = paymentMethod === "COD";
+
   const order = await Order.create({
     user: userId,
     items: orderItems,
@@ -49,14 +51,15 @@ export const createOrder = catchAsync(async (req, res) => {
     shippingFee,
     discount,
     finalTotal,
-    paymentStatus: paymentMethod === "COD" ? "paid" : "pending",
-    orderStatus: "pending",
-    isPaid: paymentMethod === "COD",
-    paidAt: paymentMethod === "COD" ? new Date() : null,
+
+    orderStatus: "pending",          
+    paymentStatus: "pending",        
+    isPaid: false,
+    paidAt: null,
   });
 
-  // ✅ CHỈ COD mới xử lý kho + cart
-  if (paymentMethod === "COD") {
+
+  if (isCOD) {
     for (const item of cart.items) {
       await Product.findByIdAndUpdate(item.product._id, {
         $inc: { stock: -item.quantity },
@@ -68,6 +71,7 @@ export const createOrder = catchAsync(async (req, res) => {
     cart.totalQuantity = 0;
     await cart.save();
   }
+
 
   res.status(201).json({
     success: true,
