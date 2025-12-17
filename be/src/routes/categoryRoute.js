@@ -50,11 +50,9 @@ const router = express.Router();
  */
 
 
-// --- PUBLIC ---
 router.get("/", getCategories);
 router.get("/:id", getCategory);
 
-// --- ADMIN ---
 router.post("/", protectedRoute, authorizeRoles("admin"), createCategory);
 router.put("/:id", protectedRoute, authorizeRoles("admin"), updateCategory);
 router.delete("/:id", protectedRoute, authorizeRoles("admin"), deleteCategory);

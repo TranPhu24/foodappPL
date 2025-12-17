@@ -1,7 +1,8 @@
 import express from 'express';
 import { createEmployee,
         getAllEmployees, 
-        deleteEmployee } from '../controllers/userController.js';
+        deleteEmployee 
+} from '../controllers/userController.js';
 import { protectedRoute, authorizeRoles } from "../middlewares/authMiddleware.js";
 
 

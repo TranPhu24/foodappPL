@@ -151,7 +151,14 @@ export const updateOrderStatus = catchAsync(async (req, res) => {
       break;
     case "completed":
       order.completedAt = now;
+      
+      if (order.paymentStatus !== "paid") {
+        order.paymentStatus = "paid";
+        order.isPaid = true;
+        order.paidAt = now;
+      }
       break;
+
 
     default:
       return res.status(400).json({ message: "Trạng thái không hợp lệ" });
