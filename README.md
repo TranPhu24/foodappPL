@@ -1,24 +1,40 @@
-Admin:
--	Hệ thống phải cho phép admin đăng nhập vào hệ thống quản trị.
--	Admin có thể xem báo cáo doanh thu theo thời gian.
--	Admin có thể xem danh sách và chi tiết các đơn hàng.
--	Admin có thể xem danh sách món ăn hiện có trong hệ thống.
--	Admin có thể thêm mới món ăn.
--	Admin có thể xem danh sách các loại/danh mục món ăn.
--	Admin có thể thêm mới loại/danh mục món ăn.
-Employee:
--	Hệ thống phải cho phép employee đăng nhập.
--	Employee có thể xem danh sách đơn hàng.
--	Employee có thể lọc đơn hàng theo trạng thái hoặc thời gian.
--	Employee có thể duyệt đơn hàng và cập nhật trạng thái xử lý.
-User:
--	Hệ thống phải cho phép người dùng đăng ký tài khoản.
--	Người dùng có thể đăng nhập vào hệ thống.
--	Người dùng có thể xem danh sách món ăn.
--	Người dùng có thể xem chi tiết món ăn.
--	Người dùng có thể tìm kiếm món ăn theo tên.
--	Người dùng có thể lọc món ăn theo loại.
--	Người dùng có thể thêm món ăn vào giỏ hàng.
--	Người dùng có thể thực hiện thanh toán.
--	Người dùng có thể xem danh sách đơn hàng đã đặt.
--	Người dùng có thể theo dõi trạng thái đơn hàng.
+
+## Chức năng hệ thống
+
+### Admin
+
+* Đăng nhập vào hệ thống quản trị.
+* Xem báo cáo doanh thu theo từng khoảng thời gian.
+* Xem danh sách đơn hàng và chi tiết từng đơn hàng.
+* Xem danh sách các món ăn hiện có trong hệ thống.
+* Thêm mới món ăn.
+* Xem danh sách các loại/danh mục món ăn.
+* Thêm mới loại/danh mục món ăn.
+
+### Employee
+
+* Đăng nhập vào hệ thống.
+* Xem danh sách các đơn hàng.
+* Lọc đơn hàng theo trạng thái hoặc theo thời gian.
+* Duyệt đơn hàng và cập nhật trạng thái xử lý đơn hàng.
+
+### User
+
+* Đăng ký tài khoản người dùng.
+* Đăng nhập vào hệ thống.
+* Xem danh sách các món ăn.
+* Xem chi tiết thông tin món ăn.
+* Tìm kiếm món ăn theo tên.
+* Lọc món ăn theo loại/danh mục.
+* Thêm món ăn vào giỏ hàng.
+* Thực hiện thanh toán đơn hàng.
+* Xem danh sách các đơn hàng đã đặt.
+* Theo dõi trạng thái xử lý đơn hàng.
+
+---
+
+Nếu bạn muốn, mình có thể:
+
+* Viết lại **ngắn hơn** (dạng checklist)
+* Viết bằng **tiếng Anh**
+* Hoặc chỉnh theo chuẩn README của **GitHub project** (có emoji, heading đẹp hơn)
