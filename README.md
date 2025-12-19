@@ -31,10 +31,3 @@
 * Xem danh sách các đơn hàng đã đặt.
 * Theo dõi trạng thái xử lý đơn hàng.
 
----
-
-Nếu bạn muốn, mình có thể:
-
-* Viết lại **ngắn hơn** (dạng checklist)
-* Viết bằng **tiếng Anh**
-* Hoặc chỉnh theo chuẩn README của **GitHub project** (có emoji, heading đẹp hơn)
