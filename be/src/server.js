@@ -11,6 +11,7 @@ import cartRoute from "./routes/cartRoute.js";
 import orderRoute from "./routes/orderRoute.js";
 import paymentRoutes from "./routes/paymentRoute.js";
 import reportRoute from "./routes/reportRoute.js"
+import discountRoute from "./routes/discountRoute.js";
 import { swaggerSpec, swaggerUiMiddleware } from "./libs/swagger.js";
 
 dotenv.config();
@@ -42,6 +43,8 @@ app.use("/api/cart", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/admin/reports", reportRoute);
+app.use("/api/discounts", discountRoute);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -73,7 +73,12 @@ const orderSchema = new mongoose.Schema(
     cancelledAt: {type: Date,default: null,},
 
     shippingFee: { type: Number, default: 0 },
-    discount: { type: Number, default: 0 },
+    discount: {
+      code: { type: String },
+      type: { type: String },
+      value: { type: Number },
+      amount: { type: Number }, 
+    },
 
     totalPrice: { type: Number, required: true },
     finalTotal: { type: Number, required: true },

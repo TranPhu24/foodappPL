@@ -39,7 +39,9 @@ export const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Vui lòng nhập email và password" });
+    return res.status(400).json({ 
+      message: "Vui lòng nhập email và password" 
+    });
   }
   const user = await User.findOne({ email: email });
   if (!user || !(await user.matchPassword(password))) {
@@ -63,7 +65,9 @@ export const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
-    return res.status(401).json({ message: "Thiếu refresh token" });
+    return res.status(401).json({ 
+      message: "Thiếu refresh token" 
+    });
   }
 
   try {
@@ -71,14 +75,18 @@ export const refreshToken = catchAsync(async (req, res) => {
     const user = await User.findById(decoded.id).select("-hashedPassword"); 
 
     if (!user) {
-      return res.status(401).json({ message: "Refresh token không hợp lệ" });
+      return res.status(401).json({ 
+        message: "Refresh token không hợp lệ" 
+      });
     }
 
     const newAccessToken = generateAccessToken(user);
 
     res.json({ accessToken: newAccessToken });
   } catch (err) {
-    return res.status(403).json({ message: "Refresh token không hợp lệ hoặc đã hết hạn" });
+    return res.status(403).json({ 
+      message: "Refresh token không hợp lệ hoặc đã hết hạn" 
+    });
   }
 });
 
@@ -87,12 +95,16 @@ export const sendOTP = catchAsync(async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ message: "Vui lòng nhập email" });
+    return res.status(400).json({ 
+      message: "Vui lòng nhập email" 
+    });
   }
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).json({ message: "Email không tồn tại" });
+    return res.status(404).json({ 
+      message: "Email không tồn tại" 
+    });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000);
@@ -128,19 +140,27 @@ export const resetPassword = catchAsync(async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).json({ message: "Thông tin người dùng không hợp lệ" });
+    return res.status(404).json({ 
+      message: "Thông tin người dùng không hợp lệ" 
+    });
   }
 
   if (!user.resetOTP || !user.resetOTPExpires) {
-    return res.status(400).json({ message: "OTP chưa được tạo" });
+    return res.status(400).json({ 
+      message: "OTP chưa được tạo" 
+    });
   }
 
   if (user.resetOTP !== otp) {
-    return res.status(400).json({ message: "OTP không đúng" });
+    return res.status(400).json({ 
+      message: "OTP không đúng" 
+    });
   }
 
   if (Date.now() > user.resetOTPExpires) {
-    return res.status(400).json({ message: "OTP đã hết hạn" });
+    return res.status(400).json({ 
+      message: "OTP đã hết hạn" 
+    });
   }
 
   
@@ -150,6 +170,8 @@ export const resetPassword = catchAsync(async (req, res) => {
 
   await user.save();
 
-  res.json({ message: "Đặt lại mật khẩu thành công!" });
+  res.json({ 
+    message: "Đặt lại mật khẩu thành công!" 
+  });
 });
 

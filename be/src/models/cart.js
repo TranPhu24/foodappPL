@@ -33,8 +33,15 @@ const cartSchema = new mongoose.Schema(
       default: [],
     },
 
-    totalQuantity: {type: Number,default: 0,},
-    totalPrice: {type: Number,default: 0,},
+    discount: {
+  code: { type: String },
+  amount: { type: Number, default: 0 },
+},
+
+
+  totalQuantity: {type: Number,default: 0,},
+  totalPrice: {type: Number,default: 0,},
+  finalTotal: { type: Number, default: 0 }, 
   },
   { timestamps: true }
 );
@@ -48,6 +55,7 @@ cartSchema.methods.calculateTotals = function () {
     (sum, item) => sum + item.quantity * item.price,
     0
   );
+  this.finalTotal = this.totalPrice - (this.discount?.amount || 0);
 };
 
 export default mongoose.model("Cart", cartSchema);

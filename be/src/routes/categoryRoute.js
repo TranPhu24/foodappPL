@@ -49,10 +49,11 @@ const router = express.Router();
  *         description: Danh sách category
  */
 
-
+//user
 router.get("/", getCategories);
 router.get("/:id", getCategory);
 
+// admin
 router.post("/", protectedRoute, authorizeRoles("admin"), createCategory);
 router.put("/:id", protectedRoute, authorizeRoles("admin"), updateCategory);
 router.delete("/:id", protectedRoute, authorizeRoles("admin"), deleteCategory);

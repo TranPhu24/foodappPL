@@ -108,7 +108,6 @@ const router = express.Router();
 
 // users
 router.get("/", getProducts);
-
 router.get("/:id", getProduct);
 
 // admin
