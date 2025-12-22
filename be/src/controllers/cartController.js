@@ -1,6 +1,7 @@
 import Cart from "../models/cart.js";
 import Product from "../models/product.js";
 import catchAsync from "../utils/catchAsync.js";
+import Discount from "../models/discount.js";
 
 
 export const addToCart = catchAsync(async (req, res) => {
@@ -73,11 +74,49 @@ export const getCart = catchAsync(async (req, res) => {
     });
   }
 
+  if (cart.discount && cart.discount.code) {
+    const discount = await Discount.findOne({
+      code: cart.discount.code,
+    });
+
+    const now = new Date();
+    let isInvalid = false;
+
+    if (
+      !discount ||
+      now < discount.startDate ||
+      now > discount.endDate
+    ) {
+      isInvalid = true;
+    }
+
+    if (
+      discount?.minOrderValue &&
+      cart.totalPrice < discount.minOrderValue
+    ) {
+      isInvalid = true;
+    }
+
+    if (
+      discount?.usageLimit &&
+      discount.usedCount >= discount.usageLimit
+    ) {
+      isInvalid = true;
+    }
+
+    if (isInvalid) {
+      cart.discount = null;
+      cart.calculateTotals();
+      await cart.save();
+    }
+  }
+
   res.status(200).json({
     message: "Lấy giỏ hàng thành công",
     cart,
   });
 });
+
 
 
 export const updateCartItem = catchAsync(async (req, res) => {
@@ -166,5 +205,4 @@ export const removeCartItem = catchAsync(async (req, res) => {
     cart,
   });
 });
-
 

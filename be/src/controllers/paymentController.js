@@ -2,7 +2,7 @@ import vnpay from "../libs/vnpay.js";
 import Order from "../models/order.js";
 import Cart from "../models/cart.js"
 import Product from "../models/product.js"
-
+import catchAsync from "../utils/catchAsync.js";
 export const createVNPayPayment = async (req, res) => {
   try {
     const { orderId } = req.body;
@@ -27,18 +27,49 @@ export const createVNPayPayment = async (req, res) => {
   }
 };
 
-export const vnpayReturn = async (req, res) => {
+export const vnpayReturn = catchAsync(async (req, res) => {
   try {
     const result = vnpay.verifyReturnUrl(req.query);
     const orderId = result.vnp_TxnRef;
 
-    if (result.isSuccess && result.isVerified) {
-      const order = await Order.findById(orderId).populate("user");
+    const order = await Order.findById(orderId).populate("user");
+    if (!order) return res.redirect("http://localhost:3000/dashboard/user/order/listorder");
 
-      if (!order || order.paymentStatus === "paid") {
-        return res.redirect(
-          "http://localhost:3000/dashboard/user/payment/payment-success?payment=success"
+    if (order.paymentStatus === "paid") {
+      return res.redirect(
+        "http://localhost:3000/dashboard/user/payment/payment-success?payment=success"
+      );
+    }
+    if (result.isVerified &&result.vnp_ResponseCode === "00") {
+      const cart = await Cart.findOne({ user: order.user });
+
+      if (cart) {
+        await Promise.all(
+          cart.items.map((item) =>
+            Product.findByIdAndUpdate(item.product._id, {
+              $inc: { stock: -item.quantity },
+            })
+          )
         );
+
+        if (cart.discount?.code) {
+          const appliedDiscount = await Discount.findOne({
+            code: cart.discount.code,
+          });
+
+          if (appliedDiscount) {
+            appliedDiscount.usedCount =
+              (appliedDiscount.usedCount || 0) + 1;
+            await appliedDiscount.save();
+          }
+        }
+
+        cart.items = [];
+        cart.discount = null;
+        cart.totalPrice = 0;
+        cart.totalQuantity = 0;
+        cart.finalTotal = 0;
+        await cart.save();
       }
 
       await Order.findByIdAndUpdate(orderId, {
@@ -47,37 +78,19 @@ export const vnpayReturn = async (req, res) => {
         paidAt: new Date(),
       });
 
-      const cart = await Cart.findOne({ user: order.user });
-      if (cart) {
-        for (const item of cart.items) {
-          await Product.findByIdAndUpdate(item.product._id, {
-            $inc: { stock: -item.quantity },
-          });
-        }
-
-        cart.items = [];
-        cart.totalPrice = 0;
-        cart.totalQuantity = 0;
-        await cart.save();
-      }
-
       return res.redirect(
         "http://localhost:3000/dashboard/user/payment/payment-success?payment=success"
       );
     }
 
-    await Order.findByIdAndUpdate(orderId, {
-      paymentStatus: "failed",
-    });
-
-    return res.redirect(
-      "http://localhost:3000/dashboard/user/order/listorder"
-    );
+    // Thanh toán thất bại
+    await Order.findByIdAndUpdate(orderId, { paymentStatus: "failed" });
+    return res.redirect("http://localhost:3000/dashboard/user/order/listorder");
   } catch (error) {
-    return res.redirect(
-      "http://localhost:3000/payment-failed?payment=error"
-    );
+    console.error(error);
+    return res.redirect("http://localhost:3000/payment-failed?payment=error");
   }
-};
+});
+
 
 

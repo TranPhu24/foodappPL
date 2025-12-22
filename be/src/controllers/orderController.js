@@ -2,6 +2,7 @@ import Order from "../models/order.js";
 import Cart from "../models/cart.js";
 import Product from "../models/product.js";
 import catchAsync from "../utils/catchAsync.js";
+import Discount from "../models/discount.js";
 
 
 export const createOrder = catchAsync(async (req, res) => {
@@ -17,7 +18,6 @@ export const createOrder = catchAsync(async (req, res) => {
     return res.status(400).json({ message: "Giỏ hàng trống" });
   }
 
-  // check stock
   for (const item of cart.items) {
     if (item.quantity > item.product.stock) {
       return res.status(400).json({
@@ -36,10 +36,15 @@ export const createOrder = catchAsync(async (req, res) => {
 
   const totalPrice = cart.totalPrice;
   const shippingFee = 0;
-  const discount = 0;
-  const finalTotal = totalPrice + shippingFee - discount;
 
-  const isCOD = paymentMethod === "COD";
+  const discount = cart.discount?.code
+    ? {
+        code: cart.discount.code,
+        amount: cart.discount.amount,
+      }
+    : null;
+
+  const finalTotal = cart.finalTotal;
 
   const order = await Order.create({
     user: userId,
@@ -47,39 +52,45 @@ export const createOrder = catchAsync(async (req, res) => {
     shippingAddress,
     paymentMethod,
     note: note.trim(),
+
     totalPrice,
     shippingFee,
     discount,
     finalTotal,
 
-    orderStatus: "pending",          
-    paymentStatus: "pending",        
-    isPaid: false,
-    paidAt: null,
+    orderStatus: "pending",
+    paymentStatus: paymentMethod === "COD" ? "pending" : "pending",
   });
 
-
-  if (isCOD) {
-    for (const item of cart.items) {
-      await Product.findByIdAndUpdate(item.product._id, {
-        $inc: { stock: -item.quantity },
-      });
+    if (cart.discount?.code) {
+    const appliedDiscount = await Discount.findOne({ code: cart.discount.code });
+    if (appliedDiscount) {
+      appliedDiscount.usedCount = (appliedDiscount.usedCount || 0) + 1;
+      await appliedDiscount.save();
     }
-
-    cart.items = [];
-    cart.totalPrice = 0;
-    cart.totalQuantity = 0;
-    await cart.save();
   }
 
+  if (paymentMethod === "COD") {
+    await Promise.all(
+      cart.items.map((item) =>
+        Product.findByIdAndUpdate(item.product._id, {
+          $inc: { stock: -item.quantity },
+        })
+      )
+    );
+    cart.items = [];
+    cart.discount = null;
+    cart.totalPrice = 0;
+    cart.totalQuantity = 0;
+    cart.finalTotal = 0;
+    await cart.save();
+  }
 
   res.status(201).json({
     success: true,
     data: { order },
   });
 });
-
-
 
 export const getMyOrders = catchAsync(async (req, res) => {
   const orders = await Order.find({ user: req.user.id })
@@ -210,6 +221,20 @@ export const cancelOrder = catchAsync(async (req, res) => {
       $inc: { stock: item.quantity },
     });
   }
+
+  if (
+  order.discount?.code &&
+  order.paymentStatus === "pending"
+) {
+  const discount = await Discount.findOne({
+    code: order.discount.code,
+  });
+
+  if (discount && discount.usedCount > 0) {
+    discount.usedCount -= 1;
+    await discount.save();
+  }
+}
 
   order.orderStatus = "cancelled";
   order.cancelledBy = isEmployee ? "employee" : "user";

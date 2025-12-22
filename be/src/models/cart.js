@@ -51,11 +51,14 @@ cartSchema.methods.calculateTotals = function () {
     (sum, item) => sum + item.quantity,
     0
   );
+
   this.totalPrice = this.items.reduce(
     (sum, item) => sum + item.quantity * item.price,
     0
   );
-  this.finalTotal = this.totalPrice - (this.discount?.amount || 0);
+  const discountAmount =this.discount && this.discount.amount ? this.discount.amount : 0;
+
+  this.finalTotal = Math.max(this.totalPrice - discountAmount, 0);
 };
 
 export default mongoose.model("Cart", cartSchema);

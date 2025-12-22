@@ -45,39 +45,28 @@ export const applyDiscount = catchAsync(async (req, res) => {
   const cart = await Cart.findOne({ user: userId });
 
   if (!cart || cart.items.length === 0) {
-    return res.status(400).json({ 
-        message: "Giỏ hàng trống" 
-    });
+    return res.status(400).json({ message: "Giỏ hàng trống" });
   }
 
   const discount = await Discount.findOne({ code, isActive: true });
 
   if (!discount) {
     return res.status(400).json({ 
-        message: "Mã giảm giá không hợp lệ" 
-    });
+      message: "Mã giảm giá không hợp lệ" });
   }
 
   const now = new Date();
   if (now < discount.startDate || now > discount.endDate) {
     return res.status(400).json({ 
-        message: "Mã giảm giá đã hết hạn" 
-    });
+      message: "Mã giảm giá đã hết hạn" });
   }
 
-  if (
-    discount.usageLimit &&
-    discount.usedCount >= discount.usageLimit
-  ) {
+  if (discount.usageLimit && discount.usedCount >= discount.usageLimit) {
     return res.status(400).json({ 
-        message: "Mã giảm giá đã hết lượt sử dụng" 
-    });
+      message: "Mã giảm giá đã hết lượt sử dụng" });
   }
 
-  if (
-    discount.minOrderValue &&
-    cart.totalPrice < discount.minOrderValue
-  ) {
+  if (discount.minOrderValue && cart.totalPrice < discount.minOrderValue) {
     return res.status(400).json({
       message: `Đơn hàng tối thiểu ${discount.minOrderValue}đ`,
     });
@@ -100,17 +89,13 @@ export const applyDiscount = catchAsync(async (req, res) => {
     discountAmount = cart.shippingFee || 0;
   }
 
-  const finalTotal = Math.max(cart.totalPrice - discountAmount, 0);
-
-    cart.discount = {
+  cart.discount = {
     code: discount.code,
-    type: discount.type,
-    value: discount.value,
     amount: discountAmount,
-    };
+  };
 
-    cart.finalTotal = finalTotal; 
-    await cart.save();
+  cart.calculateTotals();
+  await cart.save();
 
   res.json({
     success: true,
@@ -122,15 +107,35 @@ export const applyDiscount = catchAsync(async (req, res) => {
         type: discount.type,
       },
       totalPrice: cart.totalPrice,
-      finalTotal,
+      finalTotal: cart.finalTotal,
     },
   });
 });
+
+
 export const getAllDiscounts = catchAsync(async (req, res) => {
   const discounts = await Discount.find().sort({ createdAt: -1 });
 
   res.status(200).json({
     results: discounts.length,
     discounts,
+  });
+});
+
+export const removeDiscount = catchAsync(async (req, res) => {
+  const cart = await Cart.findOne({ user: req.user.id });
+
+  if (!cart) {
+    return res.status(404).json({ message: "Không tìm thấy giỏ hàng" });
+  }
+
+  cart.discount = null;
+  cart.calculateTotals();
+  await cart.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Đã huỷ mã giảm giá",
+    data: { cart },
   });
 });
