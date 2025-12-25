@@ -83,7 +83,6 @@ export const vnpayReturn = catchAsync(async (req, res) => {
       );
     }
 
-    // Thanh toán thất bại
     await Order.findByIdAndUpdate(orderId, { paymentStatus: "failed" });
     return res.redirect("http://localhost:3000/dashboard/user/order/listorder");
   } catch (error) {

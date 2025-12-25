@@ -1,10 +1,12 @@
 import express from "express";
+import passport from "passport";
 import {
   register,
   login,
   refreshToken,
   sendOTP,
   resetPassword,
+  googleCallback,
 } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -161,4 +163,18 @@ router.post("/refresh", refreshToken);
 router.post("/send-otp", sendOTP);
 router.put("/reset-password", resetPassword);
 
+router.get("/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/login",
+  }),
+  googleCallback
+);
+
+router.get("/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  })
+);
 export default router;

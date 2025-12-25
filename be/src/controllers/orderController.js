@@ -3,11 +3,12 @@ import Cart from "../models/cart.js";
 import Product from "../models/product.js";
 import catchAsync from "../utils/catchAsync.js";
 import Discount from "../models/discount.js";
+import User from "../models/user.js";
 
 
 export const createOrder = catchAsync(async (req, res) => {
   const userId = req.user.id;
-  const { shippingAddress, paymentMethod = "COD", note = "" } = req.body;
+  const {paymentMethod = "COD",note = "",addressId,newAddress,} = req.body;
 
   const cart = await Cart.findOne({ user: userId }).populate(
     "items.product",
@@ -24,6 +25,46 @@ export const createOrder = catchAsync(async (req, res) => {
         message: `Sản phẩm "${item.product.name}" chỉ còn ${item.product.stock}`,
       });
     }
+  }
+  const user = await User.findById(userId);
+  if (!user.addresses || user.addresses.length === 0) {
+  if (!newAddress) {
+    return res.status(400).json({
+      message: "Lần đầu đặt hàng, vui lòng nhập địa chỉ giao hàng",
+    });
+  }
+}
+
+  let shippingAddress;
+  //check new address
+  if (newAddress) {
+    const { fullName, phone, address, city, ward, saveAddress } = newAddress;
+
+    if (!fullName || !phone || !address || !city || !ward) {
+      return res.status(400).json({ message: "Thiếu thông tin địa chỉ" });
+    }
+
+    shippingAddress = { fullName, phone, address, city, ward };
+
+    if (saveAddress) {
+      user.addresses.push({
+        ...shippingAddress,
+        isDefault: user.addresses.length === 0,
+      });
+      await user.save();
+    }
+  } 
+  else if (addressId) {
+    shippingAddress = user.addresses.id(addressId);
+  } 
+  else {
+    shippingAddress = user.addresses.find(a => a.isDefault);
+  }
+
+  if (!shippingAddress) {
+    return res.status(400).json({
+      message: "Không tìm thấy địa chỉ giao hàng hợp lệ",
+    });
   }
 
   const orderItems = cart.items.map((item) => ({
@@ -49,7 +90,14 @@ export const createOrder = catchAsync(async (req, res) => {
   const order = await Order.create({
     user: userId,
     items: orderItems,
-    shippingAddress,
+    shippingAddress: {
+  fullName: shippingAddress.fullName,
+  phone: shippingAddress.phone,
+  address: shippingAddress.address,
+  city: shippingAddress.city,
+  ward: shippingAddress.ward,
+},
+
     paymentMethod,
     note: note.trim(),
 
@@ -91,6 +139,8 @@ export const createOrder = catchAsync(async (req, res) => {
     data: { order },
   });
 });
+
+import { getIO } from "../libs/socket.js";
 
 export const getMyOrders = catchAsync(async (req, res) => {
   const orders = await Order.find({ user: req.user.id })
@@ -136,8 +186,9 @@ export const updateOrderStatus = catchAsync(async (req, res) => {
   }
 
   const { status } = req.body;
+  const orderId = req.params.id;
 
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(orderId);
   if (!order) {
     return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
   }
@@ -151,25 +202,19 @@ export const updateOrderStatus = catchAsync(async (req, res) => {
   const now = new Date();
 
   switch (status) {
-    case "confirmed":
-      order.confirmedAt = now;
+    case "confirmed":order.confirmedAt = now;
       break;
-    case "preparing":
-      order.preparingAt = now;
+    case "preparing":order.preparingAt = now;
       break;
-    case "shipping":
-      order.shippingAt = now;
+    case "shipping":order.shippingAt = now;
       break;
-    case "completed":
-      order.completedAt = now;
-      
+    case "completed":order.completedAt = now;
       if (order.paymentStatus !== "paid") {
         order.paymentStatus = "paid";
         order.isPaid = true;
         order.paidAt = now;
       }
       break;
-
 
     default:
       return res.status(400).json({ message: "Trạng thái không hợp lệ" });
@@ -179,6 +224,20 @@ export const updateOrderStatus = catchAsync(async (req, res) => {
   order.handledBy = req.user.id;
 
   await order.save();
+
+  const io = getIO();
+  io.to(`order_${orderId}`).emit("orderStatusUpdated", {
+    orderId,
+    orderStatus: order.orderStatus,
+    paymentStatus: order.paymentStatus,
+    updatedAt: now,
+    handledBy: req.user.id,
+  });
+
+  io.to("admin_orders").emit("adminOrderUpdated", {
+    orderId,
+    orderStatus: order.orderStatus,
+  });
 
   res.json({
     success: true,

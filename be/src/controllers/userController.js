@@ -65,3 +65,21 @@ export const deleteEmployee = catchAsync(async (req, res) => {
     message: "Xóa nhân viên thành công",
   });
 });
+
+
+export const getMe = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user._id)
+    .select("-hashedPassword -resetOTP -resetOTPExpires")
+    .populate("createdBy", "username email");
+
+  if (!user) {
+    return res.status(404).json({
+      message: "Không tìm thấy người dùng",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
