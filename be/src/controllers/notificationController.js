@@ -36,8 +36,6 @@ export const createNotification = catchAsync(async (req, res) => {
   });
 });
 
-
-
 export const getAllNotifications = catchAsync(async (req, res) => {
   const notifications = await Notification.find()
     .populate("user", "name email")
