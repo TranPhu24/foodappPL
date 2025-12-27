@@ -22,6 +22,8 @@ import paymentRoutes from "./routes/paymentRoute.js";
 import reportRoute from "./routes/reportRoute.js"
 import discountRoute from "./routes/discountRoute.js";
 import notificationRoute from "./routes/notificationRoute.js";
+import chatRoute from "./routes/chatRoute.js";
+
 import { swaggerSpec, swaggerUiMiddleware } from "./libs/swagger.js";
 
 connectDB();
@@ -57,6 +59,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/admin/reports", reportRoute);
 app.use("/api/discounts", discountRoute);
 app.use("/api/notifications", notificationRoute);
+app.use("/api/chat", chatRoute);
 
 const PORT = process.env.PORT || 5000;
 

@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/",protectedRoute,authorizeRoles("admin"), createNotification);
 
-router.get("/",protectedRoute,authorizeRoles("admin"),getAllNotifications);
+router.get("/", getAllNotifications);
 
 router.delete("/:id",protectedRoute,authorizeRoles("admin"),deleteNotification);
 
