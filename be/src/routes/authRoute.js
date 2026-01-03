@@ -52,6 +52,7 @@ const router = express.Router();
  *       201:
  *         description: Đăng ký thành công
  */
+router.post("/register", register);
 
 /**
  * @swagger
@@ -79,6 +80,7 @@ const router = express.Router();
  *       200:
  *         description: Đăng nhập thành công
  */
+router.post("/login", login);
 
 /**
  * @swagger
@@ -102,6 +104,7 @@ const router = express.Router();
  *       200:
  *         description: Refresh token thành công
  */
+router.post("/refresh", refreshToken);
 
 /**
  * @swagger
@@ -125,6 +128,7 @@ const router = express.Router();
  *       200:
  *         description: Gửi OTP thành công
  */
+router.post("/send-otp", sendOTP);
 
 /**
  * @swagger
@@ -157,10 +161,6 @@ const router = express.Router();
  *         description: Reset mật khẩu thành công
  */
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/refresh", refreshToken);
-router.post("/send-otp", sendOTP);
 router.put("/reset-password", resetPassword);
 
 router.get("/google/callback",

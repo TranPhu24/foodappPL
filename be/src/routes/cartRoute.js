@@ -34,6 +34,7 @@ const router = express.Router();
  *       401:
  *         description: Chưa đăng nhập
  */
+router.get("/", protectedRoute, getCart);
 
 /**
  * @swagger
@@ -65,6 +66,7 @@ const router = express.Router();
  *       403:
  *         description: Không có quyền (chỉ user)
  */
+router.post("/", protectedRoute, authorizeRoles("user"), addToCart);
 
 
 /**
@@ -95,7 +97,7 @@ const router = express.Router();
  *       200:
  *         description: Cập nhật giỏ hàng thành công
  */
-
+router.put("/", protectedRoute, authorizeRoles("user"), updateCartItem);
 
 /**
  * @swagger
@@ -118,10 +120,6 @@ const router = express.Router();
  *       404:
  *         description: Không tìm thấy sản phẩm trong giỏ
  */
-
-router.get("/", protectedRoute, getCart);
-router.post("/", protectedRoute, authorizeRoles("user"), addToCart);
-router.put("/", protectedRoute, authorizeRoles("user"), updateCartItem);
 router.delete("/:productId",protectedRoute,authorizeRoles("user"),removeCartItem);
 
 export default router;

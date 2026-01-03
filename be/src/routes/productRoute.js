@@ -41,6 +41,7 @@ const router = express.Router();
  *       201:
  *         description: Tạo sản phẩm thành công
  */
+router.post("/", upload.single("image"), protectedRoute, authorizeRoles("admin"), createProduct);
 
 /**
  * @swagger
@@ -52,6 +53,7 @@ const router = express.Router();
  *       200:
  *         description: Danh sách sản phẩm
  */
+router.get("/", getProducts);
 
 /**
  * @swagger
@@ -69,6 +71,7 @@ const router = express.Router();
  *       200:
  *         description: Chi tiết sản phẩm
  */
+router.get("/:id", getProduct);
 
 /**
  * @swagger
@@ -88,6 +91,7 @@ const router = express.Router();
  *       200:
  *         description: Cập nhật thành công
  */
+router.patch("/:id", protectedRoute, authorizeRoles("admin"),upload.single("image"), updateProduct);
 
 /**
  * @swagger
@@ -105,14 +109,8 @@ const router = express.Router();
  *       200:
  *         description: Xóa thành công
  */
-
-// users
-router.get("/", getProducts);
-router.get("/:id", getProduct);
-
-// admin
-router.post("/", upload.single("image"), protectedRoute, authorizeRoles("admin"), createProduct);
-router.patch("/:id", protectedRoute, authorizeRoles("admin"),upload.single("image"), updateProduct);
 router.delete("/:id", protectedRoute, authorizeRoles("admin"), deleteProduct);
+
+
 
 export default router;
