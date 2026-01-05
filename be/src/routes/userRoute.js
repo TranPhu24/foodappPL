@@ -2,7 +2,10 @@ import express from 'express';
 import { createEmployee,
         getAllEmployees, 
         deleteEmployee,
-        getMe
+        getMe,
+        addFavoriteProduct,
+        removeFavoriteProduct,
+        getAllFavoriteProducts
 } from '../controllers/userController.js';
 import { protectedRoute, authorizeRoles } from "../middlewares/authMiddleware.js";
 
@@ -14,6 +17,10 @@ router.get('/employees', protectedRoute, authorizeRoles("admin"), getAllEmployee
 router.delete('/employees/:id', protectedRoute, authorizeRoles("admin"), deleteEmployee);
 
 router.get('/me', protectedRoute, getMe);
+
+router.post('/favorite', protectedRoute, addFavoriteProduct);
+router.delete('/favorite/:productId', protectedRoute, removeFavoriteProduct);
+router.get('/favorite', protectedRoute, getAllFavoriteProducts);
 
 
 export default router;

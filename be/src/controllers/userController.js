@@ -83,3 +83,76 @@ export const getMe = catchAsync(async (req, res) => {
     user,
   });
 });
+
+export const addFavoriteProduct = catchAsync(async (req, res) => {
+  const { productId } = req.body;
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return res.status(404).json({
+      message: "Không tìm thấy người dùng",
+    });
+  }
+
+  if (user.favoriteFoods.includes(productId)) {
+    return res.status(400).json({
+      message: "Sản phẩm đã nằm trong danh sách yêu thích",
+    });
+  }
+
+  user.favoriteFoods.push(productId);
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Đã thêm sản phẩm vào yêu thích",
+    favoriteFoods: user.favoriteFoods,
+  });
+});
+export const removeFavoriteProduct = catchAsync(async (req, res) => {
+  const { productId } = req.params;
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return res.status(404).json({
+      message: "Không tìm thấy người dùng",
+    });
+  }
+
+  if (!user.favoriteFoods.includes(productId)) {
+    return res.status(400).json({
+      message: "Sản phẩm không có trong danh sách yêu thích",
+    });
+  }
+
+  user.favoriteFoods.pull(productId);
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Đã xoá sản phẩm khỏi yêu thích",
+    favoriteFoods: user.favoriteFoods,
+  });
+});
+export const getAllFavoriteProducts = catchAsync(async (req, res) => {
+  const user = await User.findById(req.user.id)
+    .select("favoriteFoods")
+    .populate({
+      path: "favoriteFoods",
+      select: "name price image slug",
+    });
+
+  if (!user) {
+    return res.status(404).json({
+      message: "Không tìm thấy người dùng",
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    count: user.favoriteFoods.length,
+    favoriteFoods: user.favoriteFoods,
+  });
+});

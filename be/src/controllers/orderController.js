@@ -38,21 +38,29 @@ export const createOrder = catchAsync(async (req, res) => {
   let shippingAddress;
   //check new address
   if (newAddress) {
-    const { fullName, phone, address, city, ward, saveAddress } = newAddress;
+    const { fullName, phone, address, city, cityCode, ward, wardCode, saveAddress } = newAddress;
 
     if (!fullName || !phone || !address || !city || !ward) {
       return res.status(400).json({ message: "Thiếu thông tin địa chỉ" });
     }
-
     shippingAddress = { fullName, phone, address, city, ward };
 
-    if (saveAddress) {
-      user.addresses.push({
-        ...shippingAddress,
-        isDefault: user.addresses.length === 0,
-      });
-      await user.save();
-    }
+  if (saveAddress) {
+    user.addresses.forEach(a => (a.isDefault = false));
+    user.addresses.push({
+      fullName,
+      phone,
+      address,
+      city,
+      cityCode,      
+      ward,      
+      wardCode,
+      isDefault: true,
+    });
+
+    await user.save();
+  }
+
   } 
   else if (addressId) {
     shippingAddress = user.addresses.id(addressId);

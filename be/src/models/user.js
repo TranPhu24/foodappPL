@@ -7,7 +7,9 @@ const addressSchema = new mongoose.Schema(
     phone: { type: String, required: true, trim: true },
     address: { type: String, required: true, trim: true },
     city: { type: String, required: true, trim: true },
+    cityCode: { type: Number, required: true, trim: true },
     ward: { type: String, required: true, trim: true },
+    wardCode: { type: Number, required: true, trim: true },
     isDefault: { type: Boolean, default: false },
   },
   { _id: true }
@@ -43,6 +45,11 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, default: null},
     addresses: {
       type: [addressSchema],
+      default: [],
+    },
+    favoriteFoods: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Product",
       default: [],
     },
 
