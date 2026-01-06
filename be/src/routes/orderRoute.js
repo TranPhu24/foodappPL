@@ -9,6 +9,8 @@ import {
 } from "../controllers/orderController.js";
 
 import { protectedRoute, authorizeRoles } from "../middlewares/authMiddleware.js";
+import { auditLog } from "../middlewares/auditLogMiddleware.js";
+
 
 const router = express.Router();
 
@@ -72,7 +74,7 @@ const router = express.Router();
  *         description: Giỏ hàng trống hoặc dữ liệu không hợp lệ
  */
 
-router.post("/", protectedRoute, authorizeRoles("user"), createOrder);
+router.post("/", protectedRoute, authorizeRoles("user"), auditLog("CREATE_ORDER", "ORDER"), createOrder);
 
 /**
  * @swagger
@@ -149,7 +151,7 @@ router.get("/:id", protectedRoute, getOrderById);
  *         description: Không có quyền
  */
 
-router.put("/:id/cancel", protectedRoute, cancelOrder);
+router.put("/:id/cancel", protectedRoute, auditLog("CANCEL_ORDER", "ORDER"), cancelOrder);
 
 router.get("/", protectedRoute, getAllOrders);
 
@@ -188,6 +190,6 @@ router.get("/", protectedRoute, getAllOrders);
  *       403:
  *         description: Không có quyền
  */
-router.put("/:id/status",protectedRoute,authorizeRoles("employee"),updateOrderStatus);
+router.put("/:id/status",protectedRoute,authorizeRoles("employee"), auditLog("UPDATE_ORDER_STATUS", "ORDER"), updateOrderStatus);
 
 export default router;

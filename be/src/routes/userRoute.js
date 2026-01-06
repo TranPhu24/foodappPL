@@ -8,13 +8,14 @@ import { createEmployee,
         getAllFavoriteProducts
 } from '../controllers/userController.js';
 import { protectedRoute, authorizeRoles } from "../middlewares/authMiddleware.js";
+import { auditLog } from "../middlewares/auditLogMiddleware.js";
 
 
 const router = express.Router();
 
-router.post('/employees', protectedRoute, authorizeRoles("admin"), createEmployee);
+router.post('/employees', protectedRoute, authorizeRoles("admin"), auditLog("CREATE_EMPLOYEE", "EMPLOYEE"), createEmployee);
 router.get('/employees', protectedRoute, authorizeRoles("admin"), getAllEmployees);
-router.delete('/employees/:id', protectedRoute, authorizeRoles("admin"), deleteEmployee);
+router.delete('/employees/:id', protectedRoute, authorizeRoles("admin"), auditLog("DELETE_EMPLOYEE", "EMPLOYEE"), deleteEmployee);
 
 router.get('/me', protectedRoute, getMe);
 

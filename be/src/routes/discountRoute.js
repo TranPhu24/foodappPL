@@ -7,6 +7,8 @@ import {
 } from "../controllers/discountController.js";
 
 import {protectedRoute,authorizeRoles,} from "../middlewares/authMiddleware.js";
+import { auditLog } from "../middlewares/auditLogMiddleware.js";
+
 
 const router = express.Router();
 /**
@@ -69,7 +71,7 @@ const router = express.Router();
  *         description: Mã giảm giá đã tồn tại
  */
 
-router.post("/",protectedRoute,authorizeRoles("admin"),createDiscount);
+router.post("/",protectedRoute,authorizeRoles("admin"), auditLog("CREATE_DISCOUNT", "DISCOUNT"), createDiscount);
 
 /**
  * @swagger
@@ -98,7 +100,7 @@ router.post("/",protectedRoute,authorizeRoles("admin"),createDiscount);
  *         description: Mã giảm giá không hợp lệ hoặc không đủ điều kiện
  */
 
-router.post("/apply",protectedRoute,authorizeRoles("user"),applyDiscount);
+router.post("/apply",protectedRoute,authorizeRoles("user"), auditLog("APPLY_DISCOUNT", "DISCOUNT"), applyDiscount);
 
 /**
  * @swagger

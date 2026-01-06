@@ -8,6 +8,7 @@ import {
 } from "../controllers/productController.js";
 
 import { protectedRoute, authorizeRoles } from "../middlewares/authMiddleware.js";
+import { auditLog } from "../middlewares/auditLogMiddleware.js";
 
 import upload from "../utils/cloudinaryUpload.js";
 
@@ -41,7 +42,7 @@ const router = express.Router();
  *       201:
  *         description: Tạo sản phẩm thành công
  */
-router.post("/", upload.single("image"), protectedRoute, authorizeRoles("admin"), createProduct);
+router.post("/", upload.single("image"), protectedRoute, authorizeRoles("admin"), auditLog("CREATE_PRODUCT", "PRODUCT"), createProduct);
 
 /**
  * @swagger
@@ -91,7 +92,7 @@ router.get("/:id", getProduct);
  *       200:
  *         description: Cập nhật thành công
  */
-router.patch("/:id", protectedRoute, authorizeRoles("admin"),upload.single("image"), updateProduct);
+router.patch("/:id", protectedRoute, authorizeRoles("admin"),upload.single("image"), auditLog("UPDATE_PRODUCT", "PRODUCT"), updateProduct);
 
 /**
  * @swagger
@@ -109,7 +110,7 @@ router.patch("/:id", protectedRoute, authorizeRoles("admin"),upload.single("imag
  *       200:
  *         description: Xóa thành công
  */
-router.delete("/:id", protectedRoute, authorizeRoles("admin"), deleteProduct);
+router.delete("/:id", protectedRoute, authorizeRoles("admin"), auditLog("DELETE_PRODUCT", "PRODUCT"), deleteProduct);
 
 
 

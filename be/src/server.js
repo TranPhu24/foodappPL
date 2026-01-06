@@ -25,6 +25,8 @@ import notificationRoute from "./routes/notificationRoute.js";
 import chatRoute from "./routes/chatRoute.js";
 
 import { swaggerSpec, swaggerUiMiddleware } from "./libs/swagger.js";
+import { apiRateLimiter } from "./middlewares/rateLimitMiddleware.js";
+import { requestLogger } from "./middlewares/loggingMiddleware.js";    
 
 connectDB();
 
@@ -39,6 +41,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use(passport.initialize());
+
+app.use(requestLogger); 
+
+app.use("/api", apiRateLimiter); 
 
 const server = http.createServer(app);
 initSocket(server);

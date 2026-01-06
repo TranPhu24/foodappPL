@@ -8,6 +8,9 @@ import {
   resetPassword,
   googleCallback,
 } from "../controllers/authController.js";
+import { loginRateLimiter } from "../middlewares/rateLimitMiddleware.js";
+import { auditLog } from "../middlewares/auditLogMiddleware.js";
+
 
 const router = express.Router();
 
@@ -52,7 +55,7 @@ const router = express.Router();
  *       201:
  *         description: Đăng ký thành công
  */
-router.post("/register", register);
+router.post("/register", auditLog("REGISTER", "AUTH"), register);
 
 /**
  * @swagger
@@ -80,7 +83,7 @@ router.post("/register", register);
  *       200:
  *         description: Đăng nhập thành công
  */
-router.post("/login", login);
+router.post("/login", loginRateLimiter, auditLog("LOGIN", "AUTH"),login);
 
 /**
  * @swagger
@@ -128,7 +131,7 @@ router.post("/refresh", refreshToken);
  *       200:
  *         description: Gửi OTP thành công
  */
-router.post("/send-otp", sendOTP);
+router.post("/send-otp", auditLog("SEND_OTP", "AUTH"), sendOTP);
 
 /**
  * @swagger
@@ -161,13 +164,14 @@ router.post("/send-otp", sendOTP);
  *         description: Reset mật khẩu thành công
  */
 
-router.put("/reset-password", resetPassword);
+router.put("/reset-password", auditLog("RESET_PASSWORD", "AUTH"), resetPassword);
 
 router.get("/google/callback",
   passport.authenticate("google", {
     session: false,
     failureRedirect: "/login",
   }),
+  auditLog("GOOGLE_LOGIN", "AUTH"),
   googleCallback
 );
 
