@@ -32,15 +32,19 @@ export const vnpayReturn = catchAsync(async (req, res) => {
     const result = vnpay.verifyReturnUrl(req.query);
     const orderId = result.vnp_TxnRef;
 
+    const FRONTEND_URL = process.env.FRONTEND_URL;
+
     const order = await Order.findById(orderId).populate("user");
-    if (!order) return res.redirect("http://localhost:3000/dashboard/user/order/listorder");
+    if (!order)
+      return res.redirect(`${FRONTEND_URL}/dashboard/user/order/listorder`);
 
     if (order.paymentStatus === "paid") {
       return res.redirect(
-        "http://localhost:3000/dashboard/user/payment/payment-success?payment=success"
+        `${FRONTEND_URL}/dashboard/user/payment/payment-success?payment=success`
       );
     }
-    if (result.isVerified &&result.vnp_ResponseCode === "00") {
+
+    if (result.isVerified && result.vnp_ResponseCode === "00") {
       const cart = await Cart.findOne({ user: order.user });
 
       if (cart) {
@@ -79,17 +83,18 @@ export const vnpayReturn = catchAsync(async (req, res) => {
       });
 
       return res.redirect(
-        "http://localhost:3000/dashboard/user/payment/payment-success?payment=success"
+        `${FRONTEND_URL}/dashboard/user/payment/payment-success?payment=success`
       );
     }
 
     await Order.findByIdAndUpdate(orderId, { paymentStatus: "failed" });
-    return res.redirect("http://localhost:3000/dashboard/user/order/listorder");
+    return res.redirect(`${FRONTEND_URL}/dashboard/user/order/listorder`);
   } catch (error) {
     console.error(error);
-    return res.redirect("http://localhost:3000/payment-failed?payment=error");
+    return res.redirect(`${process.env.FRONTEND_URL}/payment-failed?payment=error`);
   }
 });
+
 
 
 
