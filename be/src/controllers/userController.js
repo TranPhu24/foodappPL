@@ -68,7 +68,7 @@ export const deleteEmployee = catchAsync(async (req, res) => {
 
 
 export const getMe = catchAsync(async (req, res) => {
-  const user = await User.findById(req.user._id)
+  const user = await User.findById(req.user.id)
     .select("-hashedPassword -resetOTP -resetOTPExpires")
     .populate("createdBy", "username email");
 

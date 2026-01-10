@@ -263,6 +263,7 @@ export const cancelOrder = catchAsync(async (req, res) => {
       message: "Vui lòng cung cấp lý do huỷ đơn",
     });
   }
+
   const order = await Order.findById(req.params.id);
   if (!order) {
     return res.status(404).json({ message: "Không tìm thấy đơn hàng" });
@@ -275,33 +276,40 @@ export const cancelOrder = catchAsync(async (req, res) => {
     return res.status(403).json({ message: "Không có quyền hủy đơn" });
   }
 
-  // user chỉ hủy khi pending
+  // chỉ được huỷ khi pending
   if (isOwner && order.orderStatus !== "pending") {
     return res.status(400).json({
       message: "Đơn hàng đã được xử lý, không thể hủy",
     });
   }
 
-  // hoàn kho
-  for (const item of order.items) {
-    await Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: item.quantity },
-    });
-  }
-
-  if (
-  order.discount?.code &&
-  order.paymentStatus === "pending"
-) {
-  const discount = await Discount.findOne({
-    code: order.discount.code,
+  if (order.paymentMethod === "VNPAY") {
+  return res.status(400).json({
+    message: "Đơn thanh toán VNPay không thể huỷ",
   });
-
-  if (discount && discount.usedCount > 0) {
-    discount.usedCount -= 1;
-    await discount.save();
-  }
 }
+// hoàn trả kho nếu đã trừ
+  if (order.paymentStatus !== "paid") {
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity },
+      });
+    }
+  }
+// hoàn trả discount nếu đã dùng
+  if (
+    order.discount?.code &&
+    order.paymentStatus === "pending"
+  ) {
+    const discount = await Discount.findOne({
+      code: order.discount.code,
+    });
+
+    if (discount && discount.usedCount > 0) {
+      discount.usedCount -= 1;
+      await discount.save();
+    }
+  }
 
   order.orderStatus = "cancelled";
   order.cancelledBy = isEmployee ? "employee" : "user";

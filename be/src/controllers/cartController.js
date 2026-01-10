@@ -82,10 +82,7 @@ export const getCart = catchAsync(async (req, res) => {
     const now = new Date();
     let isInvalid = false;
 
-    if (
-      !discount ||
-      now < discount.startDate ||
-      now > discount.endDate
+    if (!discount ||now < discount.startDate ||now > discount.endDate
     ) {
       isInvalid = true;
     }
