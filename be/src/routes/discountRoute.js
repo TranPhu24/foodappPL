@@ -3,7 +3,8 @@ import {
   createDiscount,
   applyDiscount,
   getAllDiscounts,
-  removeDiscount
+  removeDiscount,
+  deleteDiscount
 } from "../controllers/discountController.js";
 
 import {protectedRoute,authorizeRoles,} from "../middlewares/authMiddleware.js";
@@ -131,5 +132,7 @@ router.post("/remove",protectedRoute,authorizeRoles("user"),removeDiscount);
  *         description: Danh sách mã giảm giá
  */
 router.get("/",protectedRoute,authorizeRoles("admin", "employee"),getAllDiscounts);
+
+router.delete("/:id",protectedRoute,authorizeRoles("admin"), auditLog("DELETE_DISCOUNT", "DISCOUNT"), deleteDiscount);
 
 export default router;

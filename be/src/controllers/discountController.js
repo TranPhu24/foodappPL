@@ -139,3 +139,20 @@ export const removeDiscount = catchAsync(async (req, res) => {
     data: { cart },
   });
 });
+
+export const deleteDiscount = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const discount = await Discount.findById(id);
+
+  if (!discount) {
+    return res.status(404).json({
+      message: "Không tìm thấy mã giảm giá",
+    });
+  }
+  await discount.deleteOne();
+  res.status(200).json({
+    success: true,
+    message: "Xóa mã giảm giá thành công",
+  });
+});
